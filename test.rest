@@ -1,0 +1,25 @@
+POST http://localhost:8080/users
+Content-Type: application/json
+
+{
+  "username": "colesturza",
+  "email": "cole@email.com",
+  "password": "password"
+}
+
+###
+
+POST http://localhost:8080/tokens/authentication
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "colesturza",
+  "password": "password"
+}
+
+###
+
+GET http://localhost:8080/users/colesturza
+Authorization: Bearer Gn1bjSs5o7YQO8v75gQRZ7utTB/4GcOF+JnCms90D64
+Accept: application/json
