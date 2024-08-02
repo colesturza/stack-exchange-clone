@@ -4,6 +4,7 @@ import com.google.common.hash.Hashing
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import rip.opencasket.stackexchange.user.UserDto
 import rip.opencasket.stackexchange.user.UserRepository
 import java.nio.charset.StandardCharsets
 import java.security.SecureRandom
@@ -56,11 +57,18 @@ class TokenService(
 	}
 
 	@Transactional(readOnly = true)
-	fun findUserIdByScopeAndToken(scope: TokenScope, token: String): Long? {
+	fun findUserByScopeAndToken(scope: TokenScope, token: String): UserDto? {
 		val tokenHash = generateTokenHash(token)
 		val tokenEntity = tokenRepository.findByScopeAndHash(scope, tokenHash) ?: return null
 		return if (tokenEntity.issuedAt.plus(tokenEntity.expiresIn).isAfter(Instant.now())) {
-			tokenEntity.user.id
+			val user = tokenEntity.user
+			UserDto(
+				id = user.id!!,
+				username = user.username,
+				email = user.email,
+				firstName = user.firstName,
+				lastName = user.lastName,
+			)
 		} else {
 			null
 		}

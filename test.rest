@@ -21,5 +21,5 @@ Accept: application/json
 ###
 
 GET http://localhost:8080/users/colesturza
-Authorization: Bearer Gn1bjSs5o7YQO8v75gQRZ7utTB/4GcOF+JnCms90D64
+Authorization: Bearer fdGt/gEJ4U0XrTDlQk89EmsxXqmZFhgiwKMJpfHryIk
 Accept: application/json

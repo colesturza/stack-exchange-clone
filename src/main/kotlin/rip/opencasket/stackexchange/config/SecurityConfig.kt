@@ -3,6 +3,7 @@ package rip.opencasket.stackexchange.config
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
+import org.springframework.security.authentication.ProviderManager
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.invoke
@@ -14,13 +15,18 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 import rip.opencasket.stackexchange.security.BearerTokenAuthenticationFilter
+import rip.opencasket.stackexchange.security.BearerTokenAuthenticationProvider
 import rip.opencasket.stackexchange.token.TokenRepository
 import rip.opencasket.stackexchange.token.TokenService
 import rip.opencasket.stackexchange.user.UserRepository
 
+
 @Configuration
 @EnableWebSecurity
-class SecurityConfig(private val userRepository: UserRepository, private val tokenRepository: TokenRepository) {
+class SecurityConfig(
+	private val userRepository: UserRepository,
+	private val tokenRepository: TokenRepository
+) {
 
 	@Bean
 	fun passwordEncoder(): PasswordEncoder {
@@ -32,12 +38,21 @@ class SecurityConfig(private val userRepository: UserRepository, private val tok
 	}
 
 	@Bean
-	fun tokenService(): TokenService {
-		return TokenService(tokenRepository, userRepository, passwordEncoder())
+	fun tokenService(passwordEncoder: PasswordEncoder): TokenService {
+		return TokenService(tokenRepository, userRepository, passwordEncoder)
 	}
 
 	@Bean
-	fun filterChain(http: HttpSecurity): SecurityFilterChain {
+	fun filterChain(
+		http: HttpSecurity,
+		tokenService: TokenService
+	): SecurityFilterChain {
+
+		val authenticationManager = ProviderManager(
+			BearerTokenAuthenticationProvider(tokenService)
+		)
+
+		http.authenticationManager(authenticationManager)
 		http {
 			csrf {
 				disable()
@@ -50,8 +65,9 @@ class SecurityConfig(private val userRepository: UserRepository, private val tok
 			sessionManagement {
 				sessionCreationPolicy = SessionCreationPolicy.STATELESS
 			}
-			addFilterBefore<UsernamePasswordAuthenticationFilter>(BearerTokenAuthenticationFilter(tokenService()))
+			addFilterBefore<UsernamePasswordAuthenticationFilter>(BearerTokenAuthenticationFilter(authenticationManager))
 		}
+
 		return http.build()
 	}
 }
