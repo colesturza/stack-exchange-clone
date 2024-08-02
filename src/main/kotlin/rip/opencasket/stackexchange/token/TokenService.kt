@@ -1,9 +1,12 @@
 package rip.opencasket.stackexchange.token
 
 import com.google.common.hash.Hashing
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import rip.opencasket.stackexchange.user.User
+import rip.opencasket.stackexchange.user.UserAuthoritiesDto
 import rip.opencasket.stackexchange.user.UserDto
 import rip.opencasket.stackexchange.user.UserRepository
 import java.nio.charset.StandardCharsets
@@ -57,17 +60,19 @@ class TokenService(
 	}
 
 	@Transactional(readOnly = true)
-	fun findUserByScopeAndToken(scope: TokenScope, token: String): UserDto? {
+	fun findUserByScopeAndToken(scope: TokenScope, token: String): UserAuthoritiesDto? {
 		val tokenHash = generateTokenHash(token)
 		val tokenEntity = tokenRepository.findByScopeAndHash(scope, tokenHash) ?: return null
 		return if (tokenEntity.issuedAt.plus(tokenEntity.expiresIn).isAfter(Instant.now())) {
 			val user = tokenEntity.user
-			UserDto(
+			val roleNames = user.roles.map { it.name }
+			val privilegeNames = user.roles.flatMap { role -> role.privileges.map { privilege -> privilege.name } }
+			val authorities = (roleNames + privilegeNames).toSet()
+			UserAuthoritiesDto(
 				id = user.id!!,
 				username = user.username,
 				email = user.email,
-				firstName = user.firstName,
-				lastName = user.lastName,
+				authorities = authorities
 			)
 		} else {
 			null

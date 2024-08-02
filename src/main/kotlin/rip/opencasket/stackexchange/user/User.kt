@@ -4,7 +4,6 @@ import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
-import org.springframework.data.repository.Repository
 import java.time.Instant
 
 @Entity
@@ -48,11 +47,12 @@ data class User(
 	@LastModifiedDate
 	@Column(name = "updated_at", nullable = false)
 	var updatedAt: Instant? = null,
-)
 
-interface UserRepository : Repository<User, Long> {
-	fun save(user: User): User
-	fun findById(id: Long): User?
-	fun findByUsername(username: String): User?
-	fun findByEmail(email: String): User?
-}
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(
+		name = "users_roles",
+		joinColumns = [JoinColumn(name = "user_id")],
+		inverseJoinColumns = [JoinColumn(name = "role_id")]
+	)
+	var roles: Set<Role> = mutableSetOf()
+)

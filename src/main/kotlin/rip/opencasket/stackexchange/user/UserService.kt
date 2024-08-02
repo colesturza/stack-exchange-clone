@@ -17,6 +17,13 @@ data class UserDto(
 	val lastName: String? = null
 )
 
+data class UserAuthoritiesDto(
+	val id: Long,
+	val username: String,
+	val email: String,
+	val authorities: Set<String>
+)
+
 data class UserCreationDto(
 	val username: String,
 	val email: String,

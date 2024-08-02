@@ -3,6 +3,7 @@ package rip.opencasket.stackexchange.security
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import rip.opencasket.stackexchange.token.TokenScope
 import rip.opencasket.stackexchange.token.TokenService
 
@@ -19,9 +20,11 @@ class BearerTokenAuthenticationProvider(
 		}
 
 		val user = tokenService.findUserByScopeAndToken(TokenScope.AUTHENTICATION, bearerToken)
-			?: throw BadCredentialsException("Token not found or user is null")
+			?: throw BadCredentialsException("Token or user not found")
 
-		return BearerTokenAuthenticationToken(user.id, bearerToken, null).apply {
+		val authorities = user.authorities.map { SimpleGrantedAuthority(it) }
+
+		return BearerTokenAuthenticationToken(user.id, bearerToken, authorities).apply {
 			isAuthenticated = true
 		}
 	}

@@ -1,7 +1,6 @@
 package rip.opencasket.stackexchange.token
 
 import jakarta.persistence.*
-import org.springframework.data.jpa.repository.JpaRepository
 import rip.opencasket.stackexchange.user.User
 import java.time.Duration
 import java.time.Instant
@@ -37,8 +36,3 @@ data class Token(
 	@JoinColumn(name = "user_id", nullable = false, updatable = false)
 	var user: User
 )
-
-interface TokenRepository : JpaRepository<Token, Long> {
-	fun findByScopeAndHash(scope: TokenScope, hash: String): Token?
-	fun deleteByScopeAndUserId(scope: TokenScope, userId: Long)
-}
