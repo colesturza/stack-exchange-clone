@@ -6,30 +6,6 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-class UsernameAlreadyExistsException(message: String) : RuntimeException(message)
-class EmailAlreadyExistsException(message: String) : RuntimeException(message)
-
-data class UserDto(
-	val id: Long,
-	val username: String,
-	val email: String,
-	val firstName: String? = null,
-	val lastName: String? = null
-)
-
-data class UserAuthoritiesDto(
-	val id: Long,
-	val username: String,
-	val email: String,
-	val authorities: Set<String>
-)
-
-data class UserCreationDto(
-	val username: String,
-	val email: String,
-	val password: String
-)
-
 @Service
 class UserService(
 	private val passwordEncoder: PasswordEncoder,
@@ -39,11 +15,11 @@ class UserService(
 	@Transactional
 	fun create(@Valid @NotNull dto: UserCreationDto): UserDto {
 
-		if (userRepository.findByUsername(dto.username) != null) {
+		if (userRepository.findByUsername(dto.username).isPresent) {
 			throw UsernameAlreadyExistsException("Username '${dto.username}' is already in use.")
 		}
 
-		if (userRepository.findByEmail(dto.email) != null) {
+		if (userRepository.findByEmail(dto.email).isPresent) {
 			throw EmailAlreadyExistsException("Email '${dto.email}' is already in use.")
 		}
 
@@ -61,8 +37,10 @@ class UserService(
 	}
 
 	@Transactional(readOnly = true)
-	fun findByUsername(username: String): UserDto? {
-		val user = userRepository.findByUsername(username) ?: return null
+	fun findByUsername(username: String): UserDto {
+		val user = userRepository.findByUsername(username).orElseThrow {
+			UserNotFoundException("User with username '$username' not found.")
+		}
 		return UserDto(
 			id = user.id!!,
 			username = user.username,
@@ -73,8 +51,10 @@ class UserService(
 	}
 
 	@Transactional(readOnly = true)
-	fun findById(id: Long): UserDto? {
-		val user = userRepository.findById(id) ?: return null
+	fun findById(id: Long): UserDto {
+		val user = userRepository.findById(id).orElseThrow {
+			UserNotFoundException("User with ID '$id' not found.")
+		}
 		return UserDto(
 			id = user.id!!,
 			username = user.username,
@@ -85,8 +65,10 @@ class UserService(
 	}
 
 	@Transactional
-	fun updateUser(id: Long, updateRequest: UserUpdateRequest): UserDto? {
-		val user = userRepository.findById(id) ?: return null
+	fun updateUser(id: Long, updateRequest: UserUpdateRequest): UserDto {
+		val user = userRepository.findById(id).orElseThrow {
+			UserNotFoundException("User with ID '$id' not found.")
+		}
 
 		updateRequest.firstName?.let { user.firstName = it }
 		updateRequest.lastName?.let { user.lastName = it }

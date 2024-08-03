@@ -16,25 +16,24 @@ import java.sql.SQLException
 @ControllerAdvice(assignableTypes = [UserController::class])
 class UserControllerAdvice {
 
-	companion object {
-		private val logger = LoggerFactory.getLogger(UserControllerAdvice::class.java)
+	private val logger = LoggerFactory.getLogger(UserControllerAdvice::class.java)
 
+	companion object {
 		// @formatter:off
 		private val INTERNAL_SERVER_ERROR_RESPONSE = ResponseEntity("Internal server error.", HttpStatus.INTERNAL_SERVER_ERROR)
 		private val USERNAME_ALREADY_IN_USE_RESPONSE = ResponseEntity("Username already in use.", HttpStatus.CONFLICT)
 		private val EMAIL_ALREADY_IN_USE_RESPONSE = ResponseEntity("Email already in use.", HttpStatus.CONFLICT)
+		private val USER_NOT_FOUND_RESPONSE = ResponseEntity("User not found.", HttpStatus.NOT_FOUND)
 		// @formatter:on
 	}
 
 	@ExceptionHandler(UsernameAlreadyExistsException::class)
 	@ResponseBody
-	fun handleUsernameAlreadyExistsException(ex: UsernameAlreadyExistsException) =
-		USERNAME_ALREADY_IN_USE_RESPONSE
+	fun handleUsernameAlreadyExistsException(ex: UsernameAlreadyExistsException) = USERNAME_ALREADY_IN_USE_RESPONSE
 
 	@ExceptionHandler(EmailAlreadyExistsException::class)
 	@ResponseBody
-	fun handleEmailAlreadyExistsException(ex: EmailAlreadyExistsException) =
-		EMAIL_ALREADY_IN_USE_RESPONSE
+	fun handleEmailAlreadyExistsException(ex: EmailAlreadyExistsException) = EMAIL_ALREADY_IN_USE_RESPONSE
 
 	/**
 	 * Handles DataIntegrityViolationException to manage unique constraint violations.

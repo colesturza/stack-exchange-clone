@@ -4,6 +4,8 @@ import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import rip.opencasket.stackexchange.token.TokenExpiredException
+import rip.opencasket.stackexchange.token.TokenNotFoundException
 import rip.opencasket.stackexchange.token.TokenScope
 import rip.opencasket.stackexchange.token.TokenService
 
@@ -19,8 +21,15 @@ class BearerTokenAuthenticationProvider(
 			throw BadCredentialsException("Invalid Bearer token")
 		}
 
-		val user = tokenService.findUserByScopeAndToken(TokenScope.AUTHENTICATION, bearerToken)
-			?: throw BadCredentialsException("Token or user not found")
+		val user = try {
+			tokenService.findUserByScopeAndToken(TokenScope.AUTHENTICATION, bearerToken)
+		} catch (ex: Exception) {
+			when (ex) {
+				is TokenNotFoundException -> throw BadCredentialsException("Token not found")
+				is TokenExpiredException -> throw BadCredentialsException("Token expired")
+				else -> throw ex
+			}
+		}
 
 		val authorities = user.authorities.map { SimpleGrantedAuthority(it) }
 

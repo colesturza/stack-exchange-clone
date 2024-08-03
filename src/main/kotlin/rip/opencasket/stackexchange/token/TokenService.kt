@@ -1,21 +1,18 @@
 package rip.opencasket.stackexchange.token
 
 import com.google.common.hash.Hashing
-import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import rip.opencasket.stackexchange.user.User
 import rip.opencasket.stackexchange.user.UserAuthoritiesDto
-import rip.opencasket.stackexchange.user.UserDto
 import rip.opencasket.stackexchange.user.UserRepository
 import java.nio.charset.StandardCharsets
 import java.security.SecureRandom
 import java.time.Duration
 import java.time.Instant
 import java.util.*
-
-data class TokenDto(val plaintext: String, val expiry: Instant)
 
 @Service
 class TokenService(
@@ -32,22 +29,67 @@ class TokenService(
 	}
 
 	@Transactional
-	fun authenticateUser(username: String, password: String): TokenDto? {
-		val user = userRepository.findByUsername(username) ?: return null
-
-		if (!passwordEncoder.matches(password, user.passwordHash)) {
-			return null
+	fun authenticateUser(username: String, password: String): Pair<TokenDto, TokenDto> {
+		val user = userRepository.findByUsername(username).orElseThrow {
+			UsernameNotFoundException("User with username '$username' not found.")
 		}
 
+		if (!passwordEncoder.matches(password, user.passwordHash)) {
+			throw InvalidCredentialsException("Invalid username or password.")
+		}
+
+		return generateAndSaveNewAuthenticationTokens(user)
+	}
+
+	@Transactional
+	fun refreshAuthenticationToken(refreshToken: String): Pair<TokenDto, TokenDto> {
+		val tokenEntity = tokenRepository.findByScopeAndHash(TokenScope.REFRESH, generateTokenHash(refreshToken))
+			?: throw TokenNotFoundException("Refresh token not found or expired.")
+
+		if (tokenEntity.issuedAt.plus(tokenEntity.expiresIn).isBefore(Instant.now())) {
+			throw TokenExpiredException("Refresh token has expired.")
+		}
+
+		val user = tokenEntity.user
+
+		return generateAndSaveNewAuthenticationTokens(user)
+	}
+
+	@Transactional
+	fun unAuthenticateUser(userId: Long) {
+		removeAllTokensByScopeAndUser(TokenScope.AUTHENTICATION, userId)
+		removeAllTokensByScopeAndUser(TokenScope.REFRESH, userId)
+	}
+
+	@Transactional(readOnly = true)
+	fun findUserByScopeAndToken(scope: TokenScope, token: String): UserAuthoritiesDto {
+		val tokenEntity = validateToken(token, scope)
+		val user = tokenEntity.user
+		val roleNames = user.roles.map { it.name }
+		val privilegeNames = user.roles.flatMap { role -> role.privileges.map { privilege -> privilege.name } }
+		val authorities = (roleNames + privilegeNames).toSet()
+
+		return UserAuthoritiesDto(
+			id = user.id!!,
+			username = user.username,
+			email = user.email,
+			authorities = authorities
+		)
+	}
+
+	private fun removeAllTokensByScopeAndUser(scope: TokenScope, userId: Long) {
+		tokenRepository.deleteByScopeAndUserId(scope, userId)
+	}
+
+	private fun createToken(user: User, scope: TokenScope, expiresIn: Duration): TokenDto {
 		val plaintext = generateToken()
-		val expiresIn = Duration.ofHours(1)
 		val issuedAt = Instant.now()
 
 		val token = Token(
 			hash = generateTokenHash(plaintext),
 			expiresIn = expiresIn,
 			issuedAt = issuedAt,
-			scope = TokenScope.AUTHENTICATION,
+			scope = scope,
 			user = user
 		)
 
@@ -59,29 +101,26 @@ class TokenService(
 		)
 	}
 
-	@Transactional(readOnly = true)
-	fun findUserByScopeAndToken(scope: TokenScope, token: String): UserAuthoritiesDto? {
-		val tokenHash = generateTokenHash(token)
-		val tokenEntity = tokenRepository.findByScopeAndHash(scope, tokenHash) ?: return null
-		return if (tokenEntity.issuedAt.plus(tokenEntity.expiresIn).isAfter(Instant.now())) {
-			val user = tokenEntity.user
-			val roleNames = user.roles.map { it.name }
-			val privilegeNames = user.roles.flatMap { role -> role.privileges.map { privilege -> privilege.name } }
-			val authorities = (roleNames + privilegeNames).toSet()
-			UserAuthoritiesDto(
-				id = user.id!!,
-				username = user.username,
-				email = user.email,
-				authorities = authorities
-			)
-		} else {
-			null
-		}
+	private fun generateAndSaveNewAuthenticationTokens(user: User): Pair<TokenDto, TokenDto> {
+		removeAllTokensByScopeAndUser(TokenScope.AUTHENTICATION, user.id!!)
+		removeAllTokensByScopeAndUser(TokenScope.REFRESH, user.id!!)
+
+		val authToken = createToken(user, TokenScope.AUTHENTICATION, Duration.ofHours(1))
+		val refreshToken = createToken(user, TokenScope.REFRESH, Duration.ofDays(30))
+
+		return Pair(authToken, refreshToken)
 	}
 
-	@Transactional
-	fun removeAllAuthenticationTokens(userId: Long) {
-		tokenRepository.deleteByScopeAndUserId(TokenScope.AUTHENTICATION, userId)
+	private fun validateToken(token: String, scope: TokenScope): Token {
+		val tokenHash = generateTokenHash(token)
+		val tokenEntity = tokenRepository.findByScopeAndHash(scope, tokenHash)
+			?: throw TokenNotFoundException("Token not found.")
+
+		if (tokenEntity.issuedAt.plus(tokenEntity.expiresIn).isBefore(Instant.now())) {
+			throw TokenExpiredException("Token has expired.")
+		}
+
+		return tokenEntity
 	}
 
 	private fun generateToken(): String {

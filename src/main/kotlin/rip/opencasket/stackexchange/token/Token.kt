@@ -1,6 +1,7 @@
 package rip.opencasket.stackexchange.token
 
 import jakarta.persistence.*
+import org.hibernate.annotations.NaturalId
 import rip.opencasket.stackexchange.user.User
 import java.time.Duration
 import java.time.Instant
@@ -8,17 +9,16 @@ import java.time.Instant
 enum class TokenScope {
 	ACTIVATION,
 	AUTHENTICATION,
+	REFRESH,
 	PASSWORD_CHANGE
 }
 
 @Entity
 @Table(name = "tokens")
 data class Token(
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false, updatable = false)
-	var id: Long? = null,
 
+	@Id
+	@NaturalId
 	@Column(name = "hash", unique = true, nullable = false, updatable = false)
 	var hash: String,
 

@@ -1,10 +1,9 @@
 package rip.opencasket.stackexchange.user
 
-import org.springframework.data.repository.Repository
+import org.springframework.data.jpa.repository.JpaRepository
+import java.util.*
 
-interface UserRepository : Repository<User, Long> {
-	fun save(user: User): User
-	fun findById(id: Long): User?
-	fun findByUsername(username: String): User?
-	fun findByEmail(email: String): User?
+interface UserRepository : JpaRepository<User, Long> {
+	fun findByUsername(username: String): Optional<User>
+	fun findByEmail(email: String): Optional<User>
 }

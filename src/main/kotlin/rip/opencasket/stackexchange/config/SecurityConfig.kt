@@ -55,11 +55,20 @@ class SecurityConfig(
 		http.authenticationManager(authenticationManager)
 		http {
 			csrf {
+				// CORs will be configured to only allow requests from frontend host
+				// shouldn't need CSRF tokens in that case
+				disable()
+			}
+			formLogin {
+				disable()
+			}
+			httpBasic {
 				disable()
 			}
 			authorizeHttpRequests {
 				authorize(antMatcher(HttpMethod.POST, "/users"), permitAll)
 				authorize(antMatcher(HttpMethod.POST, "/tokens/authentication"), permitAll)
+				authorize(antMatcher(HttpMethod.POST, "/tokens/refresh"), permitAll)
 				authorize(anyRequest, authenticated)
 			}
 			sessionManagement {

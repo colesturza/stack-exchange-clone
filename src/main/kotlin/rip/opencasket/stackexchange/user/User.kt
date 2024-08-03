@@ -15,6 +15,18 @@ data class User(
 	@Column(name = "id")
 	var id: Long? = null,
 
+	@Version
+	@Column(name = "lock_version")
+	var lockVersion: Long = 0,
+
+	@CreatedDate
+	@Column(name = "created_at", updatable = false, nullable = false)
+	var createdAt: Instant? = null,
+
+	@LastModifiedDate
+	@Column(name = "updated_at", nullable = false)
+	var updatedAt: Instant? = null,
+
 	@Column(name = "username", unique = true, nullable = false)
 	var username: String,
 
@@ -36,19 +48,10 @@ data class User(
 	@Column(name = "pronouns")
 	var pronouns: String? = null,
 
-	@Version
-	@Column(name = "lock_version")
-	var lockVersion: Long = 0,
+	@Column(name = "is_active")
+	var isActive: Boolean = false,
 
-	@CreatedDate
-	@Column(name = "created_at", updatable = false, nullable = false)
-	var createdAt: Instant? = null,
-
-	@LastModifiedDate
-	@Column(name = "updated_at", nullable = false)
-	var updatedAt: Instant? = null,
-
-	@ManyToMany(fetch = FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(
 		name = "users_roles",
 		joinColumns = [JoinColumn(name = "user_id")],
