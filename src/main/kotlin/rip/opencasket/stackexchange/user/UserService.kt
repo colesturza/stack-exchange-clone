@@ -2,6 +2,8 @@ package rip.opencasket.stackexchange.user
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
+import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.domain.DomainEvents
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -9,7 +11,8 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class UserService(
 	private val passwordEncoder: PasswordEncoder,
-	private val userRepository: UserRepository
+	private val userRepository: UserRepository,
+	private val events: ApplicationEventPublisher,
 ) {
 
 	@Transactional
@@ -28,7 +31,11 @@ class UserService(
 			email = dto.email,
 			passwordHash = passwordEncoder.encode(dto.password)
 		)
+
 		val savedUser = userRepository.save(user)
+
+		events.publishEvent(UserRegistrationEvent(savedUser))
+
 		return UserDto(
 			id = savedUser.id!!,
 			username = savedUser.username,

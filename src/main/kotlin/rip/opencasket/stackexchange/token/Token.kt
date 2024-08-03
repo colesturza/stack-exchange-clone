@@ -10,7 +10,7 @@ enum class TokenScope {
 	ACTIVATION,
 	AUTHENTICATION,
 	REFRESH,
-	PASSWORD_CHANGE
+	PASSWORD_RESET
 }
 
 @Entity
@@ -32,7 +32,7 @@ data class Token(
 	@Column(name = "scope", nullable = false, updatable = false)
 	var scope: TokenScope,
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = [CascadeType.ALL])
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "user_id", nullable = false, updatable = false)
 	var user: User
 )

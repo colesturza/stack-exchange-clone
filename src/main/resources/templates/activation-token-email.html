@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Account Activation</title>
+</head>
+<body>
+<p>Hi,</p>
+
+<p>Thanks for signing up for a Stack Exchange account. We're excited to have you on board!</p>
+
+<p>Please send a request to the <code>/tokens/activate</code> endpoint with the following JSON body to activate your account:</p>
+
+<pre>
+    <code>
+        <!--/*@thymesVar id="activationToken" type="java.lang.String"*/-->
+        {"activationToken": "<span th:text="${activationToken}">[Token]</span>"}
+    </code>
+</pre>
+
+<p>Please note that this is a one-time use token, and it will expire in 3 days.</p>
+
+<p>Thanks,</p>
+<p>The Stack Exchange Team</p>
+</body>
+</html>

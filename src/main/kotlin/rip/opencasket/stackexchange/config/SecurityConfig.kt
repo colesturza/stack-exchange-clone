@@ -1,5 +1,6 @@
 package rip.opencasket.stackexchange.config
 
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -38,8 +39,8 @@ class SecurityConfig(
 	}
 
 	@Bean
-	fun tokenService(passwordEncoder: PasswordEncoder): TokenService {
-		return TokenService(tokenRepository, userRepository, passwordEncoder)
+	fun tokenService(passwordEncoder: PasswordEncoder, events: ApplicationEventPublisher): TokenService {
+		return TokenService(tokenRepository, userRepository, passwordEncoder, events)
 	}
 
 	@Bean
@@ -69,6 +70,8 @@ class SecurityConfig(
 				authorize(antMatcher(HttpMethod.POST, "/users"), permitAll)
 				authorize(antMatcher(HttpMethod.POST, "/tokens/authentication"), permitAll)
 				authorize(antMatcher(HttpMethod.POST, "/tokens/refresh"), permitAll)
+				authorize(antMatcher(HttpMethod.POST, "/tokens/activation"), permitAll)
+				authorize(antMatcher(HttpMethod.POST, "/tokens/activate"), permitAll)
 				authorize(anyRequest, authenticated)
 			}
 			sessionManagement {

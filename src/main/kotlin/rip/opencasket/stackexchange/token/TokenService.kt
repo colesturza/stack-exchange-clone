@@ -1,11 +1,13 @@
 package rip.opencasket.stackexchange.token
 
 import com.google.common.hash.Hashing
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import rip.opencasket.stackexchange.user.User
+import rip.opencasket.stackexchange.user.UserAlreadyActiveException
 import rip.opencasket.stackexchange.user.UserAuthoritiesDto
 import rip.opencasket.stackexchange.user.UserRepository
 import java.nio.charset.StandardCharsets
@@ -18,7 +20,8 @@ import java.util.*
 class TokenService(
 	private val tokenRepository: TokenRepository,
 	private val userRepository: UserRepository,
-	private val passwordEncoder: PasswordEncoder
+	private val passwordEncoder: PasswordEncoder,
+	private val events: ApplicationEventPublisher
 ) {
 
 	companion object {
@@ -26,6 +29,51 @@ class TokenService(
 		// This will produce a Base64-encoded string of 43 characters.
 		private const val TOKEN_BYTE_SIZE = 32
 		private val secureRandom = SecureRandom()
+	}
+
+	/**
+	 * Creates a new activation token for the user with the specified email address.
+	 *
+	 * This method performs the following steps:
+	 * 1. Attempts to find the user associated with the given email address.
+	 * 2. If the user is found, all previous activation tokens for this user are removed.
+	 * 3. A new activation token is generated and returned.
+	 *
+	 * If the user with the given email address is not found, the method will silently not work and
+	 * return an empty `Optional`. This behavior ensures that no information is disclosed about
+	 * whether an email address exists in the database, in order to maintain security and privacy.
+	 *
+	 * @param email The email address of the user for whom the activation token is to be created.
+	 * @return An `Optional` containing the newly created activation token if the user is found,
+	 *         or an empty `Optional` if the user is not found.
+	 */
+	@Transactional
+	fun createNewActivationToken(email: String): Optional<TokenDto> {
+		val user = userRepository.findByEmail(email).orElse(null) ?: return Optional.empty()
+
+		removeAllTokensByScopeAndUser(TokenScope.ACTIVATION, user.id!!)
+
+		val newToken = createToken(user, TokenScope.ACTIVATION, Duration.ofDays(3))
+
+		events.publishEvent(ActivationTokenCreationEvent(email, newToken))
+
+		return Optional.of(newToken)
+	}
+
+	@Transactional
+	fun activateUserAccount(token: String) {
+		val tokenEntity = validateToken(token, TokenScope.ACTIVATION)
+
+		val user = tokenEntity.user
+
+		if (user.isActive) {
+			throw UserAlreadyActiveException("User account is already active.")
+		}
+
+		user.isActive = true
+		userRepository.save(user)
+
+		removeAllTokensByScopeAndUser(TokenScope.ACTIVATION, user.id!!)
 	}
 
 	@Transactional
@@ -43,8 +91,10 @@ class TokenService(
 
 	@Transactional
 	fun refreshAuthenticationToken(refreshToken: String): Pair<TokenDto, TokenDto> {
-		val tokenEntity = tokenRepository.findByScopeAndHash(TokenScope.REFRESH, generateTokenHash(refreshToken))
-			?: throw TokenNotFoundException("Refresh token not found or expired.")
+		val tokenEntity =
+			tokenRepository.findByScopeAndHash(TokenScope.REFRESH, generateTokenHash(refreshToken)).orElseThrow {
+				throw TokenNotFoundException("Refresh token not found or expired.")
+			}
 
 		if (tokenEntity.issuedAt.plus(tokenEntity.expiresIn).isBefore(Instant.now())) {
 			throw TokenExpiredException("Refresh token has expired.")
@@ -113,8 +163,9 @@ class TokenService(
 
 	private fun validateToken(token: String, scope: TokenScope): Token {
 		val tokenHash = generateTokenHash(token)
-		val tokenEntity = tokenRepository.findByScopeAndHash(scope, tokenHash)
-			?: throw TokenNotFoundException("Token not found.")
+		val tokenEntity = tokenRepository.findByScopeAndHash(scope, tokenHash).orElseThrow {
+			throw TokenNotFoundException("Token not found.")
+		}
 
 		if (tokenEntity.issuedAt.plus(tokenEntity.expiresIn).isBefore(Instant.now())) {
 			throw TokenExpiredException("Token has expired.")

@@ -21,7 +21,7 @@ Accept: application/json
 ###
 
 GET http://localhost:8080/users/colesturza
-Authorization: Bearer UPazaoqnTH7Vpx/hMMVEXktkKciGr1PLvmoy1csC0uA
+Authorization: Bearer Do7M0Bihz79c9o4KJNHVZAB/IGSdXHRcxm8BOEGFNTg
 Accept: application/json
 
 ###
@@ -32,4 +32,22 @@ Accept: application/json
 
 {
   "refreshToken": "OahiUu+Xr5E9Z97erHzMV26C/8Aw/T74LBopqUvUoQ0"
+}
+
+###
+
+POST http://localhost:8080/tokens/activation
+Content-Type: application/json
+
+{
+  "email": "cole@email.com"
+}
+
+###
+
+POST http://localhost:8080/tokens/activate
+Content-Type: application/json
+
+{
+  "activationToken": "QPQLsIY97NLekRfDMpNESk3J/04p0cMsJ/157fz7xjk"
 }

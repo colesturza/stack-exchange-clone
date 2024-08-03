@@ -19,21 +19,32 @@ repositories {
 	mavenCentral()
 }
 
+
 dependencies {
+	// Spring Boot dependencies
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	developmentOnly("org.springframework.boot:spring-boot-devtools")
-	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
+	implementation("org.springframework.boot:spring-boot-starter-mail")
+	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
+	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
+
+	// Kotlin dependencies
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+	// PostgreSQL dependency
 	runtimeOnly("org.postgresql:postgresql")
+
+	// Testing dependencies
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
+	// Additional libraries
 	implementation("com.google.guava:guava:33.2.1-jre")
 }
 

@@ -1,5 +1,6 @@
 package rip.opencasket.stackexchange.token
 
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*
 class TokenController(private val tokenService: TokenService) {
 
 	@PostMapping("/authentication")
-	fun authenticate(@RequestBody request: TokenRequest): ResponseEntity<Map<String, TokenResponse>> {
+	fun authenticate(@Valid @RequestBody request: TokenRequest): ResponseEntity<Map<String, TokenResponse>> {
 		val (authToken, refreshToken) = tokenService.authenticateUser(request.username, request.password)
 		val response = mapOf(
 			"authToken" to TokenResponse(authToken.plaintext, authToken.expiry),
@@ -20,7 +21,7 @@ class TokenController(private val tokenService: TokenService) {
 	}
 
 	@PostMapping("/refresh")
-	fun refresh(@RequestBody request: RefreshTokenRequest): ResponseEntity<Map<String, TokenResponse>> {
+	fun refresh(@Valid @RequestBody request: RefreshTokenRequest): ResponseEntity<Map<String, TokenResponse>> {
 		val (authToken, refreshToken) = tokenService.refreshAuthenticationToken(request.refreshToken)
 		val response = mapOf(
 			"authToken" to TokenResponse(authToken.plaintext, authToken.expiry),
@@ -34,5 +35,17 @@ class TokenController(private val tokenService: TokenService) {
 		val currentUserId = authentication.principal as Long
 		tokenService.unAuthenticateUser(currentUserId)
 		return ResponseEntity.noContent().build()
+	}
+
+	@PostMapping("/activation")
+	fun createActivationToken(@Valid @RequestBody request: ActivationTokenRequest): ResponseEntity<Void> {
+		tokenService.createNewActivationToken(request.email)
+		return ResponseEntity.ok().build()
+	}
+
+	@PostMapping("/activate")
+	fun activateUser(@Valid @RequestBody request: ActivateUserRequest): ResponseEntity<Void> {
+		tokenService.activateUserAccount(request.activationToken)
+		return ResponseEntity.ok().build()
 	}
 }

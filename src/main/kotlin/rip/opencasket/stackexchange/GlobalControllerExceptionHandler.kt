@@ -12,6 +12,7 @@ import org.springframework.web.context.request.WebRequest
 import rip.opencasket.stackexchange.token.InvalidCredentialsException
 import rip.opencasket.stackexchange.token.TokenExpiredException
 import rip.opencasket.stackexchange.token.TokenNotFoundException
+import rip.opencasket.stackexchange.user.UserAlreadyActiveException
 import java.time.LocalDateTime
 
 @ControllerAdvice
@@ -102,6 +103,11 @@ class GlobalControllerExceptionHandler {
 			path = request.getDescription(false)
 		)
 		return ResponseEntity(errorResponse, HttpStatus.UNAUTHORIZED)
+	}
+
+	@ExceptionHandler(UserAlreadyActiveException::class)
+	fun handleUserAlreadyActiveException(ex: UserAlreadyActiveException): ResponseEntity<String> {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
 	}
 
 	@ExceptionHandler(Exception::class)
