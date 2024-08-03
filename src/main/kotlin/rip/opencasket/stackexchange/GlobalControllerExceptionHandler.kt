@@ -1,13 +1,15 @@
 package rip.opencasket.stackexchange
 
 import org.slf4j.LoggerFactory
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.validation.BindException
 import org.springframework.web.bind.MethodArgumentNotValidException
-import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
 import rip.opencasket.stackexchange.token.InvalidCredentialsException
 import rip.opencasket.stackexchange.token.TokenExpiredException
@@ -15,7 +17,8 @@ import rip.opencasket.stackexchange.token.TokenNotFoundException
 import rip.opencasket.stackexchange.user.UserAlreadyActiveException
 import java.time.LocalDateTime
 
-@ControllerAdvice
+@Order(Ordered.LOWEST_PRECEDENCE)
+@RestControllerAdvice
 class GlobalControllerExceptionHandler {
 
 	private val logger = LoggerFactory.getLogger(GlobalControllerExceptionHandler::class.java)

@@ -1,19 +1,22 @@
 package rip.opencasket.stackexchange.user
 
 import org.slf4j.LoggerFactory
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.RestControllerAdvice
 import java.sql.SQLException
 
 /**
  * Exception handler for the UserController to manage constraint violations
  * and provide appropriate responses.
  */
-@ControllerAdvice(assignableTypes = [UserController::class])
+@Order(Ordered.HIGHEST_PRECEDENCE)
+@RestControllerAdvice(assignableTypes = [UserController::class])
 class UserControllerAdvice {
 
 	private val logger = LoggerFactory.getLogger(UserControllerAdvice::class.java)
