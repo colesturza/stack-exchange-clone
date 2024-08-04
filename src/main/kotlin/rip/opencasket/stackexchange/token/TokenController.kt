@@ -2,7 +2,7 @@ package rip.opencasket.stackexchange.token
 
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.Authentication
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 
@@ -31,8 +31,7 @@ class TokenController(private val tokenService: TokenService) {
 	}
 
 	@DeleteMapping("/authentication")
-	fun removeAllAuthenticationTokens(authentication: Authentication): ResponseEntity<Void> {
-		val currentUserId = authentication.principal as Long
+	fun removeAllAuthenticationTokens(@AuthenticationPrincipal currentUserId: Long): ResponseEntity<Void> {
 		tokenService.unAuthenticateUser(currentUserId)
 		return ResponseEntity.noContent().build()
 	}

@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
+import rip.opencasket.stackexchange.security.BearerTokenAccessDeniedHandler
+import rip.opencasket.stackexchange.security.BearerTokenAuthenticationEntryPoint
 import rip.opencasket.stackexchange.security.BearerTokenAuthenticationFilter
 import rip.opencasket.stackexchange.security.BearerTokenAuthenticationProvider
 import rip.opencasket.stackexchange.token.TokenRepository
@@ -26,7 +28,9 @@ import rip.opencasket.stackexchange.user.UserRepository
 @EnableWebSecurity
 class SecurityConfig(
 	private val userRepository: UserRepository,
-	private val tokenRepository: TokenRepository
+	private val tokenRepository: TokenRepository,
+	private val bearerTokenAccessDeniedHandler: BearerTokenAccessDeniedHandler,
+	private val bearerTokenAuthenticationEntryPoint: BearerTokenAuthenticationEntryPoint
 ) {
 
 	@Bean
@@ -65,6 +69,10 @@ class SecurityConfig(
 			}
 			httpBasic {
 				disable()
+			}
+			exceptionHandling {
+				accessDeniedHandler = bearerTokenAccessDeniedHandler
+				authenticationEntryPoint = bearerTokenAuthenticationEntryPoint
 			}
 			authorizeHttpRequests {
 				authorize(antMatcher(HttpMethod.POST, "/users"), permitAll)

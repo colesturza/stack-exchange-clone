@@ -2,7 +2,7 @@ package rip.opencasket.stackexchange.user
 
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.Authentication
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 
@@ -31,9 +31,7 @@ class UserController(private val userService: UserService) {
 	}
 
 	@GetMapping("/me")
-	fun getCurrentUser(authentication: Authentication): ResponseEntity<UserResponse> {
-		val currentUserId = authentication.principal as Long
-
+	fun getCurrentUser(@AuthenticationPrincipal currentUserId: Long): ResponseEntity<UserResponse> {
 		val user = userService.findById(currentUserId)
 
 		val response = UserResponse(
@@ -49,10 +47,8 @@ class UserController(private val userService: UserService) {
 	@PatchMapping("/me")
 	fun updateUser(
 		@Valid @RequestBody updateRequest: UserUpdateRequest,
-		authentication: Authentication
+		@AuthenticationPrincipal currentUserId: Long
 	): ResponseEntity<UserResponse> {
-		val currentUserId = authentication.principal as Long
-
 		val updatedUser = userService.updateUser(currentUserId, updateRequest)
 
 		val response = UserResponse(
@@ -69,9 +65,8 @@ class UserController(private val userService: UserService) {
 	@GetMapping("/{username}")
 	fun findByUsername(
 		@PathVariable username: String,
-		authentication: Authentication
+		@AuthenticationPrincipal currentUserId: Long
 	): ResponseEntity<UserResponse> {
-		val currentUserId = authentication.principal as Long
 
 		val user = userService.findByUsername(username)
 

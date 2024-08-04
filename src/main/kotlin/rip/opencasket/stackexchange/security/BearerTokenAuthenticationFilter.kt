@@ -57,12 +57,6 @@ class BearerTokenAuthenticationFilter(private val authenticationManager: Authent
 		val bearerToken = authenticationHeader.substringAfter("Bearer ", "").trim()
 		BearerTokenAuthenticationFilter.logger.debug("Extracted Bearer token: $bearerToken")
 
-		if (bearerToken.isBlank()) {
-			BearerTokenAuthenticationFilter.logger.debug("Bearer token is blank.")
-			sendUnauthorizedError(response)
-			return
-		}
-
 		try {
 			val authenticationToken = BearerTokenAuthenticationToken(null, bearerToken, null)
 			val authentication = authenticationManager.authenticate(authenticationToken)
@@ -73,15 +67,9 @@ class BearerTokenAuthenticationFilter(private val authenticationManager: Authent
 			BearerTokenAuthenticationFilter.logger.debug("Set SecurityContextHolder to {}", authentication)
 		} catch (ex: AuthenticationException) {
 			BearerTokenAuthenticationFilter.logger.debug("Authentication failed: {}", ex.message)
-			sendUnauthorizedError(response)
-			return
+			throw ex
 		}
 
 		filterChain.doFilter(request, response)
-	}
-
-	private fun sendUnauthorizedError(response: HttpServletResponse) {
-		securityContextHolderStrategy.clearContext()
-		response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized.")
 	}
 }

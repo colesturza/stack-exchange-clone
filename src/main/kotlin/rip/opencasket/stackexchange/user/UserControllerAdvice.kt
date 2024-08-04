@@ -26,7 +26,6 @@ class UserControllerAdvice {
 		private val INTERNAL_SERVER_ERROR_RESPONSE = ResponseEntity("Internal server error.", HttpStatus.INTERNAL_SERVER_ERROR)
 		private val USERNAME_ALREADY_IN_USE_RESPONSE = ResponseEntity("Username already in use.", HttpStatus.CONFLICT)
 		private val EMAIL_ALREADY_IN_USE_RESPONSE = ResponseEntity("Email already in use.", HttpStatus.CONFLICT)
-		private val USER_NOT_FOUND_RESPONSE = ResponseEntity("User not found.", HttpStatus.NOT_FOUND)
 		// @formatter:on
 	}
 
