@@ -42,4 +42,27 @@ class MailSenderService(
 			logger.error("Failed to send activation token email", ex)
 		}
 	}
+
+	fun sendPasswordResetTokenMail(to: String, resetToken: TokenDto) {
+		val context = Context().apply {
+			setVariable("resetToken", resetToken.plaintext)
+		}
+
+		val htmlContent = templateEngine.process("password-reset-email", context)
+		val textContent = templateEngine.process("password-reset-email.txt", context)
+
+		val message: MimeMessage = mailSender.createMimeMessage()
+		val helper = MimeMessageHelper(message, true)
+
+		helper.setTo(to)
+		helper.setFrom(from)
+		helper.setSubject("Password Reset Request")
+		helper.setText(textContent, htmlContent)
+
+		try {
+			mailSender.send(message)
+		} catch (ex: Exception) {
+			logger.error("Failed to send password reset email", ex)
+		}
+	}
 }

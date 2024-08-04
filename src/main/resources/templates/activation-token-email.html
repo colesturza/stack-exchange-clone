@@ -1,3 +1,4 @@
+<!--/*@thymesVar id="activationToken" type="java.lang.String"*/-->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -9,12 +10,13 @@
 
 <p>Thanks for signing up for a Stack Exchange account. We're excited to have you on board!</p>
 
-<p>Please send a request to the <code>/tokens/activate</code> endpoint with the following JSON body to activate your account:</p>
+<p>Please send a request to the <code>/tokens/activation</code> endpoint with the following JSON body to activate your account:</p>
 
 <pre>
     <code>
-        <!--/*@thymesVar id="activationToken" type="java.lang.String"*/-->
-        {"activationToken": "<span th:text="${activationToken}">[Token]</span>"}
+        {
+            "activationToken": "<span th:text="${activationToken}">[Token]</span>"
+        }
     </code>
 </pre>
 

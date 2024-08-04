@@ -24,4 +24,10 @@ class TokenEventListener(
 	fun onActivationTokenCreationEvent(event: ActivationTokenCreationEvent) {
 		mailSenderService.sendActivationTokenMail(event.email, event.token)
 	}
+
+	@EventListener(PasswordResetTokenCreationEvent::class)
+	@Async
+	fun onPasswordResetTokenCreationEvent(event: PasswordResetTokenCreationEvent) {
+		mailSenderService.sendPasswordResetTokenMail(event.email, event.token)
+	}
 }

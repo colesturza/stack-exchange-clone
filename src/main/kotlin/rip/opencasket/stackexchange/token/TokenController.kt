@@ -20,6 +20,12 @@ class TokenController(private val tokenService: TokenService) {
 		return ResponseEntity.ok(response)
 	}
 
+	@DeleteMapping("/authentication")
+	fun removeAllAuthenticationTokens(@AuthenticationPrincipal currentUserId: Long): ResponseEntity<Void> {
+		tokenService.unAuthenticateUser(currentUserId)
+		return ResponseEntity.noContent().build()
+	}
+
 	@PostMapping("/refresh")
 	fun refresh(@Valid @RequestBody request: RefreshTokenRequest): ResponseEntity<Map<String, TokenResponse>> {
 		val (authToken, refreshToken) = tokenService.refreshAuthenticationToken(request.refreshToken)
@@ -30,21 +36,27 @@ class TokenController(private val tokenService: TokenService) {
 		return ResponseEntity.ok(response)
 	}
 
-	@DeleteMapping("/authentication")
-	fun removeAllAuthenticationTokens(@AuthenticationPrincipal currentUserId: Long): ResponseEntity<Void> {
-		tokenService.unAuthenticateUser(currentUserId)
-		return ResponseEntity.noContent().build()
-	}
-
-	@PostMapping("/activation")
+	@PostMapping("/activation/new")
 	fun createActivationToken(@Valid @RequestBody request: ActivationTokenRequest): ResponseEntity<Void> {
 		tokenService.createNewActivationToken(request.email)
 		return ResponseEntity.ok().build()
 	}
 
-	@PostMapping("/activate")
+	@PostMapping("/activation")
 	fun activateUser(@Valid @RequestBody request: ActivateUserRequest): ResponseEntity<Void> {
 		tokenService.activateUserAccount(request.activationToken)
+		return ResponseEntity.ok().build()
+	}
+
+	@PostMapping("/password-reset/new")
+	fun createPasswordRestToken(@Valid @RequestBody request: PasswordResetTokenRequest): ResponseEntity<Void> {
+		tokenService.createNewPasswordResetToken(request.email)
+		return ResponseEntity.ok().build()
+	}
+
+	@PostMapping("/password-reset")
+	fun resetUserPassword(@Valid @RequestBody request: ResetUserPasswordRequest): ResponseEntity<Void> {
+		tokenService.resetUserPassword(request.resetPasswordToken, request.newPassword)
 		return ResponseEntity.ok().build()
 	}
 }

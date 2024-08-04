@@ -78,8 +78,10 @@ class SecurityConfig(
 				authorize(antMatcher(HttpMethod.POST, "/users"), permitAll)
 				authorize(antMatcher(HttpMethod.POST, "/tokens/authentication"), permitAll)
 				authorize(antMatcher(HttpMethod.POST, "/tokens/refresh"), permitAll)
+				authorize(antMatcher(HttpMethod.POST, "/tokens/activation/new"), permitAll)
 				authorize(antMatcher(HttpMethod.POST, "/tokens/activation"), permitAll)
-				authorize(antMatcher(HttpMethod.POST, "/tokens/activate"), permitAll)
+				authorize(antMatcher(HttpMethod.POST, "/tokens/password-reset/new"), permitAll)
+				authorize(antMatcher(HttpMethod.POST, "/tokens/password-reset"), permitAll)
 				authorize(anyRequest, authenticated)
 			}
 			sessionManagement {
