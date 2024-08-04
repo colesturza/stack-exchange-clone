@@ -1,4 +1,4 @@
-package rip.opencasket.stackexchange.post
+package rip.opencasket.stackexchange.post.tag
 
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
@@ -20,7 +20,7 @@ class Tag(
 	@Column(name = "name", nullable = false, unique = true, columnDefinition = "text")
 	var name: String,
 
-	@OneToOne(optional = false)
+	@OneToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "post_id", unique = true, nullable = false, updatable = false)
 	var post: TagWiki,
 

@@ -1,8 +1,9 @@
-package rip.opencasket.stackexchange.post
+package rip.opencasket.stackexchange.post.comment
 
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
+import rip.opencasket.stackexchange.post.Post
 import rip.opencasket.stackexchange.user.User
 import java.time.Instant
 
@@ -45,30 +46,5 @@ class Comment (
 	var downVotes: Int  = 0,
 
 	@OneToMany(mappedBy = "comment", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-	var votes: List<CommentVote> = mutableListOf()
-)
-
-@Entity
-@Table(name = "comment_votes")
-class CommentVote(
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false, updatable = false)
-	var id: Long? = null,
-
-	@CreatedDate
-	@Column(name = "created_at", updatable = false, nullable = false)
-	var createdAt: Instant? = null,
-
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "comment_id", nullable = false, updatable = false)
-	var comment: Comment,
-
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "user_id", nullable = false, updatable = false)
-	var user: User,
-
-	@Column(name = "vote_type", nullable = false)
-	@Enumerated(EnumType.ORDINAL)
-	var voteType: VoteType
+	var votes: MutableList<CommentVote> = mutableListOf()
 )
