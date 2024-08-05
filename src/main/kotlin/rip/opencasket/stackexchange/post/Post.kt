@@ -34,41 +34,41 @@ abstract class Post(
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
-	open var id: Long? = null,
+	var id: Long? = null,
 
 	@Version
 	@Column(name = "lock_version")
-	open var lockVersion: Long = 0,
+	var lockVersion: Long = 0,
 
 	@CreatedDate
 	@Column(name = "created_at", updatable = false, nullable = false)
-	open var createdAt: Instant? = null,
+	var createdAt: Instant? = null,
 
 	@LastModifiedDate
 	@Column(name = "updated_at", nullable = false)
-	open var updatedAt: Instant? = null,
+	var updatedAt: Instant? = null,
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "author_id", nullable = false, updatable = false)
-	open var author: User? = null,
+	var author: User? = null,
 
 	@Column(name = "content", nullable = false, columnDefinition = "text")
-	open var content: String,
+	var content: String,
 
 	@Column(name = "up_votes", nullable = false)
-	open var upVotes: Int = 0,
+	var upVotes: Int = 0,
 
 	@Column(name = "down_votes", nullable = false)
-	open var downVotes: Int = 0,
+	var downVotes: Int = 0,
 
 	@Column(name = "comment_count", nullable = false)
-	open var commentCount: Int = 0,
+	var commentCount: Int = 0,
 
 	@OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-	open var comments: MutableList<Comment> = mutableListOf(),
+	var comments: MutableList<Comment> = mutableListOf(),
 
 	@OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-	open var votes: MutableList<PostVote> = mutableListOf(),
+	var votes: MutableList<PostVote> = mutableListOf(),
 
 	@ManyToMany
 	@JoinTable(
@@ -76,5 +76,5 @@ abstract class Post(
 		joinColumns = [JoinColumn(name = "post_id")],
 		inverseJoinColumns = [JoinColumn(name = "tag_id")]
 	)
-	open var tags: MutableList<Tag> = mutableListOf()
+	var tags: MutableList<Tag> = mutableListOf()
 )
