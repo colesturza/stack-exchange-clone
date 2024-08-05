@@ -1,6 +1,17 @@
 package rip.opencasket.stackexchange.post.comment
 
-import jakarta.persistence.*
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToMany
+import jakarta.persistence.Table
+import jakarta.persistence.Version
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import rip.opencasket.stackexchange.post.Post
@@ -10,7 +21,7 @@ import java.time.Instant
 
 @Entity
 @Table(name = "comments")
-class Comment (
+class Comment(
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id", nullable = false, updatable = false)
@@ -43,7 +54,7 @@ class Comment (
 	var upVotes: Int = 0,
 
 	@Column(name = "down_votes", nullable = false)
-	var downVotes: Int  = 0,
+	var downVotes: Int = 0,
 
 	@OneToMany(mappedBy = "comment", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
 	var votes: MutableList<CommentVote> = mutableListOf()

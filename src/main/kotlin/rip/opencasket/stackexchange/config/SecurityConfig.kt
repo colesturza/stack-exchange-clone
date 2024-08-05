@@ -19,38 +19,54 @@ import rip.opencasket.stackexchange.security.BearerTokenAccessDeniedHandler
 import rip.opencasket.stackexchange.security.BearerTokenAuthenticationEntryPoint
 import rip.opencasket.stackexchange.security.BearerTokenAuthenticationFilter
 import rip.opencasket.stackexchange.security.BearerTokenAuthenticationProvider
+import rip.opencasket.stackexchange.token.TokenGenerator
 import rip.opencasket.stackexchange.token.TokenRepository
 import rip.opencasket.stackexchange.token.TokenService
 import rip.opencasket.stackexchange.user.UserRepository
+import java.time.Clock
 
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-	private val userRepository: UserRepository,
-	private val tokenRepository: TokenRepository,
-	private val bearerTokenAccessDeniedHandler: BearerTokenAccessDeniedHandler,
-	private val bearerTokenAuthenticationEntryPoint: BearerTokenAuthenticationEntryPoint
+	private val securityProperties: SecurityProperties
 ) {
 
 	@Bean
 	fun passwordEncoder(): PasswordEncoder {
 		val defaultEncoder = "bcrypt"
 		val encoders = mutableMapOf<String, PasswordEncoder>(
-			defaultEncoder to BCryptPasswordEncoder()
+			defaultEncoder to BCryptPasswordEncoder(securityProperties.bcryptStrength)
 		)
 		return DelegatingPasswordEncoder(defaultEncoder, encoders)
 	}
 
 	@Bean
-	fun tokenService(passwordEncoder: PasswordEncoder, events: ApplicationEventPublisher): TokenService {
-		return TokenService(tokenRepository, userRepository, passwordEncoder, events)
+	fun tokenService(
+		tokenGenerator: TokenGenerator,
+		tokenRepository: TokenRepository,
+		userRepository: UserRepository,
+		passwordEncoder: PasswordEncoder,
+		clock: Clock,
+		events: ApplicationEventPublisher
+	): TokenService {
+		return TokenService(
+			securityProperties,
+			tokenGenerator,
+			tokenRepository,
+			userRepository,
+			passwordEncoder,
+			clock,
+			events
+		)
 	}
 
 	@Bean
 	fun filterChain(
 		http: HttpSecurity,
-		tokenService: TokenService
+		tokenService: TokenService,
+		bearerTokenAccessDeniedHandler: BearerTokenAccessDeniedHandler,
+		bearerTokenAuthenticationEntryPoint: BearerTokenAuthenticationEntryPoint
 	): SecurityFilterChain {
 
 		val authenticationManager = ProviderManager(

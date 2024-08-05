@@ -12,7 +12,8 @@ data class UserAuthoritiesDto(
 	val id: Long,
 	val username: String,
 	val email: String,
-	val authorities: Set<String>
+	val authorities: Set<String>,
+	val isEmailVerified: Boolean
 )
 
 data class UserCreationDto(

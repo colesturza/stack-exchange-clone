@@ -1,9 +1,21 @@
 package rip.opencasket.stackexchange.user
 
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EntityListeners
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.JoinTable
+import jakarta.persistence.ManyToMany
+import jakarta.persistence.Table
+import jakarta.persistence.Version
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import java.time.Duration
 import java.time.Instant
 
 @Entity
@@ -48,8 +60,17 @@ data class User(
 	@Column(name = "pronouns")
 	var pronouns: String? = null,
 
-	@Column(name = "is_active")
-	var isActive: Boolean = false,
+	@Column(name = "is_email_verified")
+	var isEmailVerified: Boolean = false,
+
+	@Column(name = "failed_login_attempts")
+	var failedLoginAttempts: Int = 0,
+
+	@Column(name = "locked_at")
+	var lockedAt: Instant? = null,
+
+	@Column(name = "locked_duration")
+	var lockedDuration: Duration? = null,
 
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(

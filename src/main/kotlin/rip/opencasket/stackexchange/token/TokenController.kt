@@ -2,8 +2,12 @@ package rip.opencasket.stackexchange.token
 
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import rip.opencasket.stackexchange.security.CurrentUserId
 
 
 @RestController
@@ -21,8 +25,8 @@ class TokenController(private val tokenService: TokenService) {
 	}
 
 	@DeleteMapping("/authentication")
-	fun removeAllAuthenticationTokens(@AuthenticationPrincipal currentUserId: Long): ResponseEntity<Void> {
-		tokenService.unAuthenticateUser(currentUserId)
+	fun removeAllAuthenticationTokens(@CurrentUserId currentUserId: Long?): ResponseEntity<Void> {
+		tokenService.unAuthenticateUser(currentUserId!!)
 		return ResponseEntity.noContent().build()
 	}
 

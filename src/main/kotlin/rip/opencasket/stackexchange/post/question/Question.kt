@@ -1,11 +1,18 @@
 package rip.opencasket.stackexchange.post.question
 
-import jakarta.persistence.*
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
+import jakarta.persistence.DiscriminatorValue
+import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
 import rip.opencasket.stackexchange.post.Post
 import rip.opencasket.stackexchange.post.PostVote
-import rip.opencasket.stackexchange.post.tag.Tag
 import rip.opencasket.stackexchange.post.answer.Answer
 import rip.opencasket.stackexchange.post.comment.Comment
+import rip.opencasket.stackexchange.post.tag.Tag
 import rip.opencasket.stackexchange.user.User
 import java.time.Instant
 

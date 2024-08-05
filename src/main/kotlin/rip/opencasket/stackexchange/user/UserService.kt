@@ -3,7 +3,6 @@ package rip.opencasket.stackexchange.user
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.data.domain.DomainEvents
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

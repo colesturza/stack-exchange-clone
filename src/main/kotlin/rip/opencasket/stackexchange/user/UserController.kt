@@ -2,9 +2,15 @@ package rip.opencasket.stackexchange.user
 
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
+import rip.opencasket.stackexchange.security.CurrentUserId
 
 
 @RestController
@@ -31,8 +37,8 @@ class UserController(private val userService: UserService) {
 	}
 
 	@GetMapping("/me")
-	fun getCurrentUser(@AuthenticationPrincipal currentUserId: Long): ResponseEntity<UserResponse> {
-		val user = userService.findById(currentUserId)
+	fun getCurrentUser(@CurrentUserId currentUserId: Long?): ResponseEntity<UserResponse> {
+		val user = userService.findById(currentUserId!!)
 
 		val response = UserResponse(
 			id = user.id,
@@ -45,11 +51,11 @@ class UserController(private val userService: UserService) {
 	}
 
 	@PatchMapping("/me")
-	fun updateUser(
+	fun updateCurrentUser(
 		@Valid @RequestBody updateRequest: UserUpdateRequest,
-		@AuthenticationPrincipal currentUserId: Long
+		@CurrentUserId currentUserId: Long?
 	): ResponseEntity<UserResponse> {
-		val updatedUser = userService.updateUser(currentUserId, updateRequest)
+		val updatedUser = userService.updateUser(currentUserId!!, updateRequest)
 
 		val response = UserResponse(
 			id = updatedUser.id,
@@ -65,7 +71,7 @@ class UserController(private val userService: UserService) {
 	@GetMapping("/{username}")
 	fun findByUsername(
 		@PathVariable username: String,
-		@AuthenticationPrincipal currentUserId: Long
+		@CurrentUserId currentUserId: Long?
 	): ResponseEntity<UserResponse> {
 
 		val user = userService.findByUsername(username)

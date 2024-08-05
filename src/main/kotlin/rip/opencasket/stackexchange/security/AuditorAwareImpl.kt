@@ -3,6 +3,7 @@ package rip.opencasket.stackexchange.security
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.AuditorAware
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.UserDetails
 import java.util.*
 
 class AuditorAwareImpl : AuditorAware<Long> {
@@ -20,10 +21,17 @@ class AuditorAwareImpl : AuditorAware<Long> {
 		}
 
 		return when (val principal = authentication.principal) {
-			is Long -> {
-				logger.debug("Current auditor ID: {}", principal)
-				Optional.of(principal)
+			is UserDetails -> {
+				val userDetails = principal as? UserDetailsImpl
+				userDetails?.let {
+					logger.debug("Current auditor ID: {}", it.id)
+					Optional.of(it.id)
+				} ?: run {
+					logger.warn("UserDetails principal is not of type UserDetailsImpl.")
+					Optional.empty()
+				}
 			}
+
 			is String -> {
 				if (principal == "anonymousUser") {
 					logger.debug("Principal is 'anonymousUser'.")
@@ -33,6 +41,7 @@ class AuditorAwareImpl : AuditorAware<Long> {
 					Optional.empty()
 				}
 			}
+
 			else -> {
 				logger.warn("Unexpected principal type: ${principal::class.simpleName}")
 				Optional.empty()

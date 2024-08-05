@@ -25,7 +25,7 @@ class BearerTokenAuthenticationFilter(private val authenticationManager: Authent
 	OncePerRequestFilter() {
 
 	private var securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy()
-	private var securityContextRepository = RequestAttributeSecurityContextRepository();
+	private var securityContextRepository = RequestAttributeSecurityContextRepository()
 
 	companion object {
 		private val logger = LoggerFactory.getLogger(BearerTokenAuthenticationFilter::class.java)

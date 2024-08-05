@@ -33,7 +33,14 @@ class BearerTokenAuthenticationProvider(
 
 		val authorities = user.authorities.map { SimpleGrantedAuthority(it) }
 
-		return BearerTokenAuthenticationToken(user.id, bearerToken, authorities).apply {
+		return BearerTokenAuthenticationToken(
+			UserDetailsImpl(
+				id = user.id,
+				username = user.username,
+				authorities = authorities,
+				isEmailVerified = user.isEmailVerified,
+			), bearerToken, authorities
+		).apply {
 			isAuthenticated = true
 		}
 	}
