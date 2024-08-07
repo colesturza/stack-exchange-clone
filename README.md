@@ -1,5 +1,7 @@
 # Stack Exchange Clone
 
+**Notice:** This project is very much still a work in progress
+
 This project is a Stack Exchange clone built using Spring Boot with Kotlin.
 The application provides features such as user authentication, question and
 answer posting, voting, and more.
